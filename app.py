@@ -10,6 +10,7 @@ Single-user local app: MCP connections (and any tokens) are shared by the proces
 """
 import json
 import os
+from collections.abc import Mapping
 from pathlib import Path
  
 import anthropic
@@ -38,7 +39,20 @@ def get_anthropic_api_key() -> str | None:
 
 @st.cache_resource(show_spinner="Connecting to MCP servers…")
 def get_hub() -> MCPHub:
-    servers = json.loads(CONFIG_PATH.read_text()) if CONFIG_PATH.exists() else {}
+    if CONFIG_PATH.exists():
+        servers = json.loads(CONFIG_PATH.read_text())
+    else:
+        try:
+            configured_servers = st.secrets.get("mcp_servers", {})
+        except StreamlitSecretNotFoundError:
+            configured_servers = {}
+        servers = {
+            name: {
+                key: dict(value) if isinstance(value, Mapping) else value
+                for key, value in config.items()
+            }
+            for name, config in configured_servers.items()
+        }
     return MCPHub(servers)
 
 
@@ -60,9 +74,11 @@ agent: TravelAgent = st.session_state.agent
 # ------------------------------------------------------------ sidebar
 with st.sidebar:
     st.header("MCP connections")
-    if not CONFIG_PATH.exists():
-        st.warning(f"No {CONFIG_PATH.name} found. Chat works, but I can't search or book. "
-                   "Copy mcp_servers.example.json and edit it.")
+    if not hub.servers:
+        st.warning(
+            "No MCP servers configured. Chat works, but travel search and booking tools "
+            "are unavailable. Add server settings in Streamlit Secrets."
+        )
     for name in hub.servers:
         if name in hub.errors:
             st.error(f"❌ {name}: {hub.errors[name]}")
