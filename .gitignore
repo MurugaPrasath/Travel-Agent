@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+mcp_servers.json
+.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.venv/
+venv/

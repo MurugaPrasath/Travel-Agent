@@ -1,0 +1,13 @@
+{
+  "travelcode": {
+    "url": "https://mcp.travel-code.com/mcp",
+    "headers": { "Authorization": "Bearer ${TRAVELCODE_TOKEN}" }
+  },
+  "letsfg": {
+    "url": "https://letsfg.co/mcp",
+    "headers": { "Authorization": "Bearer ${LETSFG_TOKEN}" }
+  },
+  "ignav_flights_search_only": {
+    "url": "https://ignav.com/mcp"
+  }
+}
